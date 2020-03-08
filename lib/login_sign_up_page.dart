@@ -13,11 +13,11 @@ class LoginSignUpPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'It\'s not my turn',
+      title: appTitle,
       theme: ThemeData(
         primaryColor: themeColor,
       ),
-      home: LoginScreen(title: 'IT\'S NOT MY TURN'),
+      home: LoginScreen(title: appTitle),
       debugShowCheckedModeBanner: false,
     );
   }
@@ -69,74 +69,6 @@ class LoginScreenState extends State<LoginScreen> {
     });
   }
 
-  Future<Null> handleSignIn() async {
-    prefs = await SharedPreferences.getInstance();
-
-    this.setState(() {
-      isLoading = true;
-    });
-
-    GoogleSignInAccount googleUser = await googleSignIn.signIn();
-    GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-
-    final AuthCredential credential = GoogleAuthProvider.getCredential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
-
-    FirebaseUser firebaseUser =
-        (await firebaseAuth.signInWithCredential(credential)).user;
-
-    if (firebaseUser != null) {
-      // Check is already sign up
-      final QuerySnapshot result = await Firestore.instance
-          .collection('users')
-          .where('id', isEqualTo: firebaseUser.uid)
-          .getDocuments();
-      final List<DocumentSnapshot> documents = result.documents;
-      if (documents.length == 0) {
-        // Update data to server if new user
-        Firestore.instance
-            .collection('users')
-            .document(firebaseUser.uid)
-            .setData({
-          'nickname': firebaseUser.displayName,
-          'photoUrl': firebaseUser.photoUrl,
-          'id': firebaseUser.uid,
-          'createdAt': DateTime.now().millisecondsSinceEpoch.toString(),
-          'chattingWith': null
-        });
-
-        // Write data to local
-        currentUser = firebaseUser;
-        await prefs.setString('id', currentUser.uid);
-        await prefs.setString('nickname', currentUser.displayName);
-        await prefs.setString('photoUrl', currentUser.photoUrl);
-      } else {
-        // Write data to local
-        await prefs.setString('id', documents[0]['id']);
-        await prefs.setString('nickname', documents[0]['nickname']);
-        await prefs.setString('photoUrl', documents[0]['photoUrl']);
-        await prefs.setString('aboutMe', documents[0]['aboutMe']);
-      }
-      Fluttertoast.showToast(msg: "Sign in success");
-      this.setState(() {
-        isLoading = false;
-      });
-
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  MainScreen(currentUserId: firebaseUser.uid)));
-    } else {
-      Fluttertoast.showToast(msg: "Sign in fail");
-      this.setState(() {
-        isLoading = false;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -151,12 +83,12 @@ class LoginScreenState extends State<LoginScreen> {
           children: <Widget>[
             Center(
               child: FlatButton(
-                  onPressed: handleSignIn,
+                  onPressed: handleGoogleSignIn,
                   child: Text(
                     'SIGN IN WITH GOOGLE',
                     style: TextStyle(fontSize: 16.0),
                   ),
-                  color: Color(0xffdd4b39),
+                  color: Colors.redAccent,
                   highlightColor: Color(0xffff7f7f),
                   splashColor: Colors.transparent,
                   textColor: Colors.white,
@@ -178,5 +110,82 @@ class LoginScreenState extends State<LoginScreen> {
             ),
           ],
         ));
+  }
+
+  Future<Null> handleGoogleSignIn() async {
+    prefs = await SharedPreferences.getInstance();
+
+    this.setState(() {
+      isLoading = true;
+    });
+
+    GoogleSignInAccount googleUser = await googleSignIn.signIn();
+    GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+    final AuthCredential credential = GoogleAuthProvider.getCredential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+
+    FirebaseUser firebaseUser =
+        (await firebaseAuth.signInWithCredential(credential)).user;
+
+    if (firebaseUser != null) {
+      handleSuccess(firebaseUser);
+    } else {
+      handleFailure();
+    }
+  }
+
+  void handleSuccess(FirebaseUser firebaseUser) {
+    // Check is already sign up
+    updateUserInfo(firebaseUser);
+    Fluttertoast.showToast(msg: "Sign in success");
+    this.setState(() {
+      isLoading = false;
+    });
+
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => MainScreen(currentUserId: firebaseUser.uid)));
+  }
+
+  void handleFailure() {
+    Fluttertoast.showToast(msg: "Sign in fail");
+    this.setState(() {
+      isLoading = false;
+    });
+  }
+
+  Future<void> updateUserInfo(FirebaseUser firebaseUser) async {
+    final QuerySnapshot result = await Firestore.instance
+        .collection('users')
+        .where('id', isEqualTo: firebaseUser.uid)
+        .getDocuments();
+    final List<DocumentSnapshot> documents = result.documents;
+    if (documents.length == 0) {
+      // Update data to server if new user
+      Firestore.instance
+          .collection('users')
+          .document(firebaseUser.uid)
+          .setData({
+        'name': firebaseUser.displayName,
+        'photoUrl': firebaseUser.photoUrl,
+        'id': firebaseUser.uid,
+        'createdAt': DateTime.now().millisecondsSinceEpoch.toString(),
+      });
+
+      // Write data to local
+      currentUser = firebaseUser;
+      await prefs.setString('id', currentUser.uid);
+      await prefs.setString('name', currentUser.displayName);
+      await prefs.setString('photoUrl', currentUser.photoUrl);
+    } else {
+      // Write data to local
+      await prefs.setString('id', documents[0]['id']);
+      await prefs.setString('name', documents[0]['name']);
+      await prefs.setString('photoUrl', documents[0]['photoUrl']);
+    }
   }
 }
