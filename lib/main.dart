@@ -1,53 +1,33 @@
-// Flutter code sample for SwitchListTile
-
-// ![SwitchListTile sample](https://flutter.github.io/assets-for-api-docs/assets/material/switch_list_tile.png)
-//
-// This widget shows a switch that, when toggled, changes the state of a [bool]
-// member field called `_lights`.
-
 import 'package:flutter/material.dart';
+import 'package:it_is_not_my_turn/login_sign_up_page.dart';
 
-void main() => runApp(MyApp());
+import 'const.dart';
 
-/// This Widget is the main application widget.
-class MyApp extends StatelessWidget {
-  static const String _title = 'Flutter Code Sample';
+void main() => runApp(LoginSignUpPage());
+
+class MainScreen extends StatefulWidget {
+  final String currentUserId;
+
+  MainScreen({Key key, @required this.currentUserId}) : super(key: key);
 
   @override
+  MainScreenState createState() => MainScreenState();
+}
+
+class MainScreenState extends State<MainScreen> {
+  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: _title,
-      home: Scaffold(
-        appBar: AppBar(title: const Text(_title)),
-        body: Center(
-          child: MyStatefulWidget(),
+    return new Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Flutter login demo',
+          style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
         ),
+        centerTitle: true,
       ),
-    );
-  }
-}
-
-class MyStatefulWidget extends StatefulWidget {
-  MyStatefulWidget({Key key}) : super(key: key);
-
-  @override
-  _MyStatefulWidgetState createState() => _MyStatefulWidgetState();
-}
-
-class _MyStatefulWidgetState extends State<MyStatefulWidget> {
-  bool _lights = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return SwitchListTile(
-      title: const Text('Lights'),
-      value: _lights,
-      onChanged: (bool value) {
-        setState(() {
-          _lights = value;
-        });
-      },
-      secondary: const Icon(Icons.lightbulb_outline),
+      body: new Container(
+        child: new Text("Hello World"),
+      ),
     );
   }
 }
