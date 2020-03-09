@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:it_is_not_my_turn/add_duty_page.dart';
 import 'package:it_is_not_my_turn/login_sign_up_page.dart';
 
 import 'const.dart';
@@ -60,8 +62,39 @@ class MainScreenState extends State<MainScreen> {
         ),
       ),
       body: new Container(
-        child: new Text("Hello World"),
+        child: StreamBuilder(
+          stream: Firestore.instance.collection('duties').snapshots(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(themeColor),
+                ),
+              );
+            } else {
+              return ListView.builder(
+                padding: EdgeInsets.all(10.0),
+                itemBuilder: (context, index) =>
+                    buildItem(context, snapshot.data.documents[index]),
+                itemCount: snapshot.data.documents.length,
+              );
+            }
+          },
+        ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          onAddDutyPress();
+        },
+        child: Icon(Icons.add),
+        backgroundColor: primaryColor,
+      ),
+    );
+  }
+
+  Widget buildItem(BuildContext context, DocumentSnapshot document) {
+    return ListTile(
+      title: Text(document['name']),
     );
   }
 
@@ -75,5 +108,12 @@ class MainScreenState extends State<MainScreen> {
     Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => LoginSignUpPage()),
         (Route<dynamic> route) => false);
+  }
+
+  void onAddDutyPress() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => AddDutyPage()),
+    );
   }
 }
