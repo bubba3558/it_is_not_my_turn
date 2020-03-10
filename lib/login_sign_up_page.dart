@@ -60,7 +60,7 @@ class LoginScreenState extends State<LoginScreen> {
         context,
         MaterialPageRoute(
             builder: (context) =>
-                MainScreen(currentUserId: prefs.getString('id'))),
+                MainScreen(currentUserId: prefs.getString('name'))),
       );
     }
 
@@ -88,10 +88,9 @@ class LoginScreenState extends State<LoginScreen> {
                     'SIGN IN WITH GOOGLE',
                     style: TextStyle(fontSize: 16.0),
                   ),
-                  color: Colors.redAccent,
-                  highlightColor: Color(0xffff7f7f),
+                  color: buttonColor,
                   splashColor: Colors.transparent,
-                  textColor: Colors.white,
+                  textColor: buttonLabelColor,
                   padding: EdgeInsets.fromLTRB(30.0, 15.0, 30.0, 15.0)),
             ),
 
@@ -148,7 +147,7 @@ class LoginScreenState extends State<LoginScreen> {
     Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => MainScreen(currentUserId: firebaseUser.uid)));
+            builder: (context) => MainScreen(currentUserId: firebaseUser.displayName)));
   }
 
   void handleFailure() {
