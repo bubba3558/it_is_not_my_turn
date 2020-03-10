@@ -1,4 +1,7 @@
+import 'dart:ui';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:enum_to_string/enum_to_string.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -15,11 +18,14 @@ class MainScreen extends StatefulWidget {
   MainScreen({Key key, @required this.currentUserId}) : super(key: key);
 
   @override
-  MainScreenState createState() => MainScreenState();
+  State createState() => MainScreenState(currentUserId: currentUserId);
 }
 
 class MainScreenState extends State<MainScreen> {
   bool isLoading = false;
+  final String currentUserId;
+
+  MainScreenState({Key key, @required this.currentUserId});
 
   @override
   Widget build(BuildContext context) {
@@ -37,11 +43,12 @@ class MainScreenState extends State<MainScreen> {
           children: <Widget>[
             DrawerHeader(
               decoration: BoxDecoration(
-                  image: DecorationImage(
-                image: NetworkImage(
-                    'https://cdn.pixabay.com/photo/2015/05/31/14/23/organizer-791939_1280.jpg'),
-                fit: BoxFit.cover,
-              )),
+                image: DecorationImage(
+                  image: NetworkImage(
+                      'https://cdn.pixabay.com/photo/2015/05/31/14/23/organizer-791939_1280.jpg'),
+                  fit: BoxFit.cover,
+                ),
+              ),
               child: Text(
                 'Menu',
                 style: TextStyle(
@@ -87,14 +94,31 @@ class MainScreenState extends State<MainScreen> {
           onAddDutyPress();
         },
         child: Icon(Icons.add),
-        backgroundColor: primaryColor,
+        backgroundColor: buttonColor,
       ),
     );
   }
 
   Widget buildItem(BuildContext context, DocumentSnapshot document) {
+    var lastUser = document['lastUserId'];
     return ListTile(
-      title: Text(document['name']),
+      title: Row(
+//        todo align somehow
+        children: <Widget>[
+          Text(document['name']),
+          SizedBox(
+            width: 16.0,
+          ),
+          buildLeftTimeInfo(document['nextDeadline'].toDate()),
+        ],
+      ),
+      subtitle: lastUser == null
+          ? Text('Was never done')
+          : Text('last done by $lastUser'),
+      trailing: new IconButton(
+          icon: Icon(Icons.done),
+          tooltip: 'Increase volume by 10',
+          onPressed: () => onDoneClick(document)),
     );
   }
 
@@ -115,5 +139,62 @@ class MainScreenState extends State<MainScreen> {
       context,
       MaterialPageRoute(builder: (context) => AddDutyPage()),
     );
+  }
+
+  Widget buildLeftTimeInfo(DateTime deadline) {
+//    todo choose better colors
+    final now = DateTime.now();
+    final lastMidnight = new DateTime(now.year, now.month, now.day);
+    int diffInDays = deadline.difference(lastMidnight).inDays;
+    if (diffInDays < 0) {
+      diffInDays *= -1;
+      return Text('Overdue by $diffInDays',
+          style: TextStyle(color: Colors.red));
+    }
+    if (diffInDays == 0) {
+      return Text('Do it today', style: TextStyle(color: Colors.yellow));
+    }
+    if (diffInDays < 7) {
+      return Text('Left $diffInDays days',
+          style: TextStyle(color: Colors.green));
+    }
+    int weeksLeft = (diffInDays / 7).floor();
+    if (diffInDays < 5) {
+      return Text('Left $weeksLeft weeks',
+          style: TextStyle(color: Colors.blueGrey));
+    } else {
+      return Text('Left more than 4 weeks',
+          style: TextStyle(color: Colors.grey));
+    }
+  }
+
+  onDoneClick(DocumentSnapshot task) {
+    task.reference.updateData({
+      'nextDeadline': calculateNextDeadline(
+          EnumToString.fromString(Periodicity.values, task['periodicity']),
+          task['nextDeadline'].toDate()),
+      'lastUserId': currentUserId
+    });
+  }
+
+  // ignore: missing_return
+  DateTime calculateNextDeadline(
+      Periodicity periodicity, DateTime currentDeadline) {
+    const frequency = 1;
+    var now = DateTime.now();
+    switch (periodicity) {
+      case Periodicity.Daily:
+        return DateTime(now.year, now.month, now.day + frequency,
+            currentDeadline.hour, currentDeadline.minute);
+      case Periodicity.Weekly:
+        return DateTime(now.year, now.month, now.day + frequency * 7,
+            currentDeadline.hour, currentDeadline.minute);
+      case Periodicity.Monthly:
+        return DateTime(now.year, now.month + frequency, now.day,
+            currentDeadline.hour, currentDeadline.minute);
+      case Periodicity.Annually:
+        return DateTime(now.year + frequency, now.month, now.day,
+            currentDeadline.hour, currentDeadline.minute);
+    }
   }
 }
