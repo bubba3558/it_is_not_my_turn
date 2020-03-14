@@ -5,11 +5,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:it_is_not_my_turn/add_duty_page.dart';
+import 'package:it_is_not_my_turn/const.dart';
 import 'package:it_is_not_my_turn/duty_history.dart';
 import 'package:it_is_not_my_turn/login_sign_up_page.dart';
 import 'package:it_is_not_my_turn/model/duty.dart';
-
-import 'const.dart';
 
 void main() => runApp(LoginSignUpPage());
 
@@ -70,6 +69,7 @@ class MainScreenState extends State<MainScreen> {
         ),
       ),
       body: Container(
+        color: bodyColor,
         child: StreamBuilder(
           stream: Firestore.instance.collection('duties').snapshots(),
           builder: (context, snapshot) {
@@ -123,7 +123,10 @@ class MainScreenState extends State<MainScreen> {
             IconButton(
                 icon: Icon(Icons.done),
                 tooltip: 'Checked as done',
-                onPressed: () => onDoneClick(duty)),
+                disabledColor: bodyColor,
+                color: iconButtonColor,
+                onPressed:
+                    duty.nextDeadline == null ? null : () => onDoneClick(duty)),
           ],
         ));
   }
@@ -151,6 +154,9 @@ class MainScreenState extends State<MainScreen> {
 //    todo choose better colors
     final now = DateTime.now();
     final lastMidnight = new DateTime(now.year, now.month, now.day);
+    if (deadline == null) {
+      return Text('Task complated', style: TextStyle(color: Colors.black26));
+    }
     int diffInDays = deadline.difference(lastMidnight).inDays;
     if (diffInDays < 0) {
       diffInDays *= -1;
@@ -176,16 +182,23 @@ class MainScreenState extends State<MainScreen> {
 
   onDoneClick(Duty duty) {
     duty.lastUserName = currentUserId;
-    duty.nextDeadline =
-        calculateNextDeadline(duty.periodicity, duty.nextDeadline);
+    duty.nextDeadline = calculateDeadline(duty);
     Firestore.instance
         .collection('duties')
         .document(duty.name)
         .setData(duty.toJson());
   }
 
+  DateTime calculateDeadline(Duty duty) {
+    DateTime nextDeadline =
+        calculateNextDate(duty.periodicity, duty.nextDeadline);
+    return duty.endDate == null || nextDeadline.isBefore(duty.endDate)
+        ? nextDeadline
+        : null;
+  }
+
   // ignore: missing_return
-  DateTime calculateNextDeadline(
+  DateTime calculateNextDate(
       Periodicity periodicity, DateTime currentDeadline) {
     const frequency = 1;
     var now = DateTime.now();
