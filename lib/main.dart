@@ -1,12 +1,13 @@
 import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:enum_to_string/enum_to_string.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:it_is_not_my_turn/add_duty_page.dart';
+import 'package:it_is_not_my_turn/duty_history.dart';
 import 'package:it_is_not_my_turn/login_sign_up_page.dart';
+import 'package:it_is_not_my_turn/model/duty.dart';
 
 import 'const.dart';
 
@@ -68,7 +69,7 @@ class MainScreenState extends State<MainScreen> {
           ],
         ),
       ),
-      body: new Container(
+      body: Container(
         child: StreamBuilder(
           stream: Firestore.instance.collection('duties').snapshots(),
           builder: (context, snapshot) {
@@ -99,27 +100,32 @@ class MainScreenState extends State<MainScreen> {
     );
   }
 
-  Widget buildItem(BuildContext context, DocumentSnapshot document) {
-    var lastUser = document['lastUserId'];
+  Widget buildItem(BuildContext context, DocumentSnapshot dutyDocument) {
+    Duty duty = Duty.fromJson(dutyDocument.data);
     return ListTile(
-      title: Row(
+        title: Row(
 //        todo align somehow
-        children: <Widget>[
-          Text(document['name']),
-          SizedBox(
-            width: 16.0,
-          ),
-          buildLeftTimeInfo(document['nextDeadline'].toDate()),
-        ],
-      ),
-      subtitle: lastUser == null
-          ? Text('Was never done')
-          : Text('last done by $lastUser'),
-      trailing: new IconButton(
-          icon: Icon(Icons.done),
-          tooltip: 'Increase volume by 10',
-          onPressed: () => onDoneClick(document)),
-    );
+          children: <Widget>[
+            Text(duty.name),
+            SizedBox(
+              width: 16.0,
+            ),
+            buildLeftTimeInfo(duty.nextDeadline),
+          ],
+        ),
+        subtitle: duty.lastUserName == null
+            ? Text('Was never done')
+            : Text('last done by ' + duty.lastUserName),
+        onTap: () => onInfoClick(duty),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            IconButton(
+                icon: Icon(Icons.done),
+                tooltip: 'Checked as done',
+                onPressed: () => onDoneClick(duty)),
+          ],
+        ));
   }
 
   Future<Null> signOut() async {
@@ -168,13 +174,14 @@ class MainScreenState extends State<MainScreen> {
     }
   }
 
-  onDoneClick(DocumentSnapshot task) {
-    task.reference.updateData({
-      'nextDeadline': calculateNextDeadline(
-          EnumToString.fromString(Periodicity.values, task['periodicity']),
-          task['nextDeadline'].toDate()),
-      'lastUserId': currentUserId
-    });
+  onDoneClick(Duty duty) {
+    duty.lastUserName = currentUserId;
+    duty.nextDeadline =
+        calculateNextDeadline(duty.periodicity, duty.nextDeadline);
+    Firestore.instance
+        .collection('duties')
+        .document(duty.name)
+        .setData(duty.toJson());
   }
 
   // ignore: missing_return
@@ -196,5 +203,10 @@ class MainScreenState extends State<MainScreen> {
         return DateTime(now.year + frequency, now.month, now.day,
             currentDeadline.hour, currentDeadline.minute);
     }
+  }
+
+  onInfoClick(Duty duty) {
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => DutyHistoryScreen(duty: duty)));
   }
 }

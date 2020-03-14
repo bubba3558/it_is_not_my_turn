@@ -1,12 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
-import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 
 import 'const.dart';
+import 'model/duty.dart';
 
 class AddDutyPage extends StatelessWidget {
   @override
@@ -123,7 +123,7 @@ class AddDutyFormState extends State<AddDutyForm> {
             },
             items: Periodicity.values.map((Periodicity value) {
               return DropdownMenuItem<Periodicity>(
-                  value: value, child: Text(EnumToString.parse(value)));
+                  value: value, child: Text(value.toString()));
             }).toList()),
       ],
     );
@@ -147,12 +147,9 @@ class AddDutyFormState extends State<AddDutyForm> {
   void save() {
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
-      Firestore.instance.collection('duties').add({
-        'name': _name,
-        'description': _description,
-        'nextDeadline': _startDate,
-        'periodicity': EnumToString.parse(_periodicity),
-      });
+      Firestore.instance.collection('duties').document(_name).setData(
+          Duty(_name, _description, _periodicity, _startDate, _endDate)
+              .toJson());
       Fluttertoast.showToast(msg: 'Task with name $_name was created');
       Navigator.pop(context);
     } else {
