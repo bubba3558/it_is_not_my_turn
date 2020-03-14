@@ -8,10 +8,3 @@ final buttonColor = Colors.redAccent;
 final buttonLabelColor = Colors.white;
 
 final appTitle = 'It\'s not my turn App';
-
-enum Periodicity {
-  Daily,
-  Weekly,
-  Monthly,
-  Annually
-}
