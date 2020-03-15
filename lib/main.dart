@@ -9,6 +9,7 @@ import 'package:it_is_not_my_turn/const.dart';
 import 'package:it_is_not_my_turn/duty_history.dart';
 import 'package:it_is_not_my_turn/login_sign_up_page.dart';
 import 'package:it_is_not_my_turn/model/duty.dart';
+import 'package:it_is_not_my_turn/model/dutyHistory.dart';
 
 void main() => runApp(LoginSignUpPage());
 
@@ -152,12 +153,10 @@ class MainScreenState extends State<MainScreen> {
 
   Widget buildLeftTimeInfo(DateTime deadline) {
 //    todo choose better colors
-    final now = DateTime.now();
-    final lastMidnight = new DateTime(now.year, now.month, now.day);
     if (deadline == null) {
       return Text('Task complated', style: TextStyle(color: Colors.black26));
     }
-    int diffInDays = deadline.difference(lastMidnight).inDays;
+    int diffInDays = calculateDiffInDay(deadline);
     if (diffInDays < 0) {
       diffInDays *= -1;
       return Text('Overdue by $diffInDays',
@@ -180,13 +179,25 @@ class MainScreenState extends State<MainScreen> {
     }
   }
 
+  int calculateDiffInDay(DateTime datetime) {
+    final now = DateTime.now();
+    final lastMidnight = new DateTime(now.year, now.month, now.day);
+    return datetime.difference(lastMidnight).inDays;
+  }
+
   onDoneClick(Duty duty) {
     duty.lastUserName = currentUserId;
+    int diffInDays = calculateDiffInDay(duty.nextDeadline);
     duty.nextDeadline = calculateDeadline(duty);
     Firestore.instance
         .collection('duties')
         .document(duty.name)
         .setData(duty.toJson());
+    Firestore.instance
+        .collection('completionHistory')
+        .document(duty.name)
+        .collection('dutyHistory')
+        .add(DutyHistory(currentUserId, DateTime.now(), diffInDays).toJson());
   }
 
   DateTime calculateDeadline(Duty duty) {
