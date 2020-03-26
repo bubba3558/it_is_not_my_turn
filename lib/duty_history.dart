@@ -17,13 +17,36 @@ class DutyHistoryScreen extends StatefulWidget {
   State createState() => DutyHistoryState(duty: duty);
 }
 
+class DataRequiredForBuild {
+  String mostActiveUser;
+  String leastActiveUser;
+
+  DataRequiredForBuild(this.mostActiveUser, this.leastActiveUser);
+}
+
 class DutyHistoryState extends State<DutyHistoryScreen> {
   final winnerIcon = 'https://image.flaticon.com/icons/svg/1170/1170611.svg';
   final loserIcon = 'https://image.flaticon.com/icons/svg/43/43646.svg';
   final formatter = new DateFormat('dd-MM-yyyy H:m');
   Duty duty;
 
+  Future<DataRequiredForBuild> dataRequiredForBuild;
+
   DutyHistoryState({Key key, @required this.duty});
+
+  Future<DataRequiredForBuild> _fetchAllData() async {
+    return DataRequiredForBuild(
+      await _fetchMostActiveUser(),
+      await _fetchLeastActiveUser(),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    dataRequiredForBuild = _fetchAllData();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,20 +59,28 @@ class DutyHistoryState extends State<DutyHistoryScreen> {
           centerTitle: true,
         ),
         body: Column(children: <Widget>[
-          GridView.count(
-              shrinkWrap: true,
-              crossAxisCount: 2,
-              childAspectRatio: 1.0,
-              padding: const EdgeInsets.all(4.0),
-              mainAxisSpacing: 4.0,
-              crossAxisSpacing: 4.0,
-              children: <Widget>[
-//                        todo count statistics
-                buildAwardCard(
-                    'The most active user:', 'Martyna Kania', winnerIcon),
-                buildAwardCard(
-                    'The most inactive user:', 'Martyna Kania', loserIcon),
-              ]),
+          FutureBuilder<DataRequiredForBuild>(
+            future: dataRequiredForBuild,
+            builder: (context, snapshot) {
+              return snapshot.hasData
+                  ? GridView.count(
+                      shrinkWrap: true,
+                      crossAxisCount: 2,
+                      childAspectRatio: 1.0,
+                      padding: const EdgeInsets.all(4.0),
+                      mainAxisSpacing: 4.0,
+                      crossAxisSpacing: 4.0,
+                      children: <Widget>[
+                          buildAwardCard('The most active user:',
+                              snapshot.data.mostActiveUser, winnerIcon),
+                          buildAwardCard('The most inactive user:',
+                              snapshot.data.leastActiveUser, loserIcon),
+                        ])
+                  : Center(
+                      child: CircularProgressIndicator(),
+                    );
+            },
+          ),
           Text('History:', style: TextStyle(fontSize: 20)),
           Expanded(
               child: StreamBuilder(
@@ -103,7 +134,7 @@ class DutyHistoryState extends State<DutyHistoryScreen> {
           ? Text(
               'Done ' +
                   history.daysBeforeDeadline.toString() +
-                  ' before deadline',
+                  ' days before deadline',
               style: TextStyle(color: Colors.greenAccent),
             )
           : Text(
@@ -113,5 +144,30 @@ class DutyHistoryState extends State<DutyHistoryScreen> {
               style: TextStyle(color: Colors.redAccent),
             ),
     );
+  }
+
+  Future<String> _fetchLeastActiveUser() async {
+    //todo after adding user groups, choose totally inactive (==not included on list)
+    // user first
+    return _fetchUserByCount(false);
+  }
+
+  Future<String> _fetchMostActiveUser() async {
+    return _fetchUserByCount(true);
+  }
+
+  Future<String> _fetchUserByCount(bool descending) async {
+    QuerySnapshot snapshot = await Firestore.instance
+        .collection('completionHistory')
+        .document(duty.name)
+        .collection('userStatistics')
+        .orderBy('count', descending: descending)
+        .limit(1)
+        .getDocuments();
+    if (snapshot.documents.length > 0) {
+      return snapshot.documents[0].documentID;
+    } else {
+      return '';
+    }
   }
 }
