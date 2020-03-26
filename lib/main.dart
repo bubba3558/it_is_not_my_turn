@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:it_is_not_my_turn/add_duty_page.dart';
 import 'package:it_is_not_my_turn/const.dart';
@@ -193,11 +194,16 @@ class MainScreenState extends State<MainScreen> {
         .collection('duties')
         .document(duty.name)
         .setData(duty.toJson());
-    Firestore.instance
+    var historyRef = Firestore.instance
         .collection('completionHistory')
-        .document(duty.name)
+        .document(duty.name);
+    historyRef
         .collection('dutyHistory')
         .add(DutyHistory(currentUserId, DateTime.now(), diffInDays).toJson());
+    historyRef
+        .collection('userStatistics')
+        .document(currentUserId)
+        .setData({'count':1});
   }
 
   DateTime calculateDeadline(Duty duty) {
