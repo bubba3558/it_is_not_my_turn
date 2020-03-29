@@ -12,22 +12,25 @@ import 'package:it_is_not_my_turn/login_sign_up_page.dart';
 import 'package:it_is_not_my_turn/model/duty.dart';
 import 'package:it_is_not_my_turn/model/dutyHistory.dart';
 
+import 'model/user.dart';
+
 void main() => runApp(LoginSignUpPage());
 
 class MainScreen extends StatefulWidget {
-  final String currentUserId;
+  final User currentUser;
 
-  MainScreen({Key key, @required this.currentUserId}) : super(key: key);
+  MainScreen({Key key, @required this.currentUser}) : super(key: key);
 
   @override
-  State createState() => MainScreenState(currentUserId: currentUserId);
+  State createState() => MainScreenState(currentUser: currentUser);
 }
 
 class MainScreenState extends State<MainScreen> {
-  bool isLoading = false;
-  final String currentUserId;
+  final User currentUser;
 
-  MainScreenState({Key key, @required this.currentUserId});
+  bool isLoading = false;
+
+  MainScreenState({Key key, @required this.currentUser});
 
   @override
   Widget build(BuildContext context) {
@@ -134,8 +137,8 @@ class MainScreenState extends State<MainScreen> {
             IconButton(
                 icon: Icon(Icons.done),
                 tooltip: 'Checked as done',
-                disabledColor: bodyColor,
                 color: iconButtonColor,
+                disabledColor: bodyColor,
                 onPressed:
                     duty.nextDeadline == null ? null : () => onDoneClick(duty)),
           ],
@@ -196,23 +199,21 @@ class MainScreenState extends State<MainScreen> {
   }
 
   onDoneClick(Duty duty) {
-    duty.lastUserName = currentUserId;
+    duty.lastUserName = currentUser.name;
     int diffInDays = calculateDiffInDay(duty.nextDeadline);
     duty.nextDeadline = calculateDeadline(duty);
     Firestore.instance
         .collection('duties')
         .document(duty.name)
         .setData(duty.toJson());
-    var historyRef = Firestore.instance
-        .collection('completionHistory')
-        .document(duty.name);
-    historyRef
-        .collection('dutyHistory')
-        .add(DutyHistory(currentUserId, DateTime.now(), diffInDays).toJson());
+    var historyRef =
+        Firestore.instance.collection('completionHistory').document(duty.name);
+    historyRef.collection('dutyHistory').add(
+        DutyHistory(currentUser.name, DateTime.now(), diffInDays).toJson());
     historyRef
         .collection('userStatistics')
-        .document(currentUserId)
-        .setData({'count':1});
+        .document(currentUser.name)
+        .setData({'count': 1});
   }
 
   DateTime calculateDeadline(Duty duty) {

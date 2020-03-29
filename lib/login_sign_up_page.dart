@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,6 +9,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:it_is_not_my_turn/const.dart';
 import 'package:it_is_not_my_turn/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'model/user.dart';
 
 class LoginSignUpPage extends StatelessWidget {
   @override
@@ -57,13 +60,12 @@ class LoginScreenState extends State<LoginScreen> {
     isLoggedIn = await googleSignIn.isSignedIn();
     if (isLoggedIn) {
       Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) =>
-                MainScreen(currentUserId: prefs.getString('name'))),
-      );
+          context,
+          MaterialPageRoute(
+              builder: (context) => MainScreen(
+                  currentUser:
+                      new User.fromJson(jsonDecode(prefs.getString('user'))))));
     }
-
     this.setState(() {
       isLoading = false;
     });
@@ -130,24 +132,22 @@ class LoginScreenState extends State<LoginScreen> {
         (await firebaseAuth.signInWithCredential(credential)).user;
 
     if (firebaseUser != null) {
-      handleSuccess(firebaseUser);
+      handleSuccess(new User.fromFirebase(firebaseUser));
     } else {
       handleFailure();
     }
   }
 
-  void handleSuccess(FirebaseUser firebaseUser) {
+  void handleSuccess(User user) {
     // Check is already sign up
-    updateUserInfo(firebaseUser);
+    updateUserInfo(user);
     Fluttertoast.showToast(msg: "Sign in success");
     this.setState(() {
       isLoading = false;
     });
 
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => MainScreen(currentUserId: firebaseUser.displayName)));
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => MainScreen(currentUser: user)));
   }
 
   void handleFailure() {
@@ -157,34 +157,21 @@ class LoginScreenState extends State<LoginScreen> {
     });
   }
 
-  Future<void> updateUserInfo(FirebaseUser firebaseUser) async {
+  Future<void> updateUserInfo(User user) async {
     final QuerySnapshot result = await Firestore.instance
         .collection('users')
-        .where('id', isEqualTo: firebaseUser.uid)
+        .where('id', isEqualTo: user.id)
         .getDocuments();
     final List<DocumentSnapshot> documents = result.documents;
     if (documents.length == 0) {
       // Update data to server if new user
       Firestore.instance
           .collection('users')
-          .document(firebaseUser.uid)
-          .setData({
-        'name': firebaseUser.displayName,
-        'photoUrl': firebaseUser.photoUrl,
-        'id': firebaseUser.uid,
-        'createdAt': DateTime.now().millisecondsSinceEpoch.toString(),
-      });
-
-      // Write data to local
-      currentUser = firebaseUser;
-      await prefs.setString('id', currentUser.uid);
-      await prefs.setString('name', currentUser.displayName);
-      await prefs.setString('photoUrl', currentUser.photoUrl);
+          .document(user.id)
+          .setData(user.toJson());
     } else {
-      // Write data to local
-      await prefs.setString('id', documents[0]['id']);
-      await prefs.setString('name', documents[0]['name']);
-      await prefs.setString('photoUrl', documents[0]['photoUrl']);
+      user = User.fromJson(documents[0].data);
     }
+    await prefs.setString('user', jsonEncode(user.toJson()));
   }
 }
