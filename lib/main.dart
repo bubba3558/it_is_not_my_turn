@@ -1,9 +1,9 @@
 import 'dart:ui';
 
+import 'package:add_2_calendar/add_2_calendar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:it_is_not_my_turn/add_duty_page.dart';
 import 'package:it_is_not_my_turn/const.dart';
@@ -123,6 +123,15 @@ class MainScreenState extends State<MainScreen> {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             IconButton(
+                icon: Icon(Icons.calendar_today),
+                tooltip: 'Creating event',
+                color: iconButtonColor,
+                disabledColor: bodyColor,
+                onPressed: duty.nextDeadline == null ||
+                        duty.nextDeadline.isBefore(DateTime.now())
+                    ? null
+                    : () => onCalendarClick(duty)),
+            IconButton(
                 icon: Icon(Icons.done),
                 tooltip: 'Checked as done',
                 disabledColor: bodyColor,
@@ -238,5 +247,15 @@ class MainScreenState extends State<MainScreen> {
   onInfoClick(Duty duty) {
     Navigator.push(context,
         MaterialPageRoute(builder: (context) => DutyHistoryScreen(duty: duty)));
+  }
+
+  onCalendarClick(Duty duty) {
+    final Event event = Event(
+        title: duty.name,
+        description: duty.description,
+        allDay: true,
+        startDate: duty.nextDeadline,
+        endDate: duty.nextDeadline.add(Duration.zero));
+    Add2Calendar.addEvent2Cal(event);
   }
 }
