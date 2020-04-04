@@ -2,8 +2,10 @@ import 'dart:ui';
 
 import 'package:add_2_calendar/add_2_calendar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collection/collection.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -34,7 +36,7 @@ class MainScreenState extends State<MainScreen> {
       FlutterLocalNotificationsPlugin();
 
   bool isLoading = false;
-  DateTime lastNotificationDate = DateTime.now();
+  List<Duty> _dutiesWithScheduledNotification;
 
   MainScreenState({Key key, @required this.currentUser});
 
@@ -42,13 +44,13 @@ class MainScreenState extends State<MainScreen> {
   initState() {
     super.initState();
     var initializationSettingsAndroid =
-        new AndroidInitializationSettings("@mipmap/ic_launcher");
+        new AndroidInitializationSettings('@mipmap/ic_launcher');
     var initializationSettingsIOS = new IOSInitializationSettings();
     var initializationSettings = new InitializationSettings(
         initializationSettingsAndroid, initializationSettingsIOS);
     flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
     flutterLocalNotificationsPlugin.initialize(initializationSettings,
-        onSelectNotification: onSelectNotification);
+        onSelectNotification: showOverdueAlert);
   }
 
   @override
@@ -106,7 +108,7 @@ class MainScreenState extends State<MainScreen> {
                   List<DocumentSnapshot> duties1 = snapshot.data.documents;
                   var duties =
                       duties1.map((d) => Duty.fromJson(d.data)).toList();
-                  _showNotificationAboutOverdueDuties(duties);
+                  _scheduleNotificationAboutOverdueDuties(duties);
                   return ListView.builder(
                       padding: EdgeInsets.all(10.0),
                       itemBuilder: (context, index) =>
@@ -208,6 +210,10 @@ class MainScreenState extends State<MainScreen> {
     }
   }
 
+  DateTime _getNextMidnight(DateTime dateTime) {
+    return new DateTime(dateTime.year, dateTime.month, dateTime.day + 1);
+  }
+
   DateTime _getLastMidnight() {
     final now = DateTime.now();
     return new DateTime(now.year, now.month, now.day);
@@ -280,44 +286,48 @@ class MainScreenState extends State<MainScreen> {
     Add2Calendar.addEvent2Cal(event);
   }
 
-  Future onSelectNotification(String payload) async {
+  Future showOverdueAlert(String payload) async {
     showDialog(
       context: context,
       builder: (_) {
         return new AlertDialog(
-          title: Text("Task with given name are overdue"),
-          content: Text(payload),
+          title:
+              Text('You have overdue tasks. Check if it is not your turn :)'),
+          content: Text('Overdue tasks: $payload'),
         );
       },
     );
   }
 
-  //todo add schedule
-  Future _showNotificationAboutOverdueDuties(List<Duty> duties) async {
-    if (_getLastMidnight().isBefore(lastNotificationDate)) {
-      return;
-    }
-    lastNotificationDate = DateTime.now();
-    var overdueTasks = duties
+  Future _scheduleNotificationAboutOverdueDuties(List<Duty> duties) async {
+    List<Duty> futureDuties = duties
         .where((d) =>
-            d.nextDeadline != null && d.nextDeadline.isBefore(DateTime.now()))
+            d.nextDeadline != null &&
+            d.nextDeadline.isAfter(_getLastMidnight().add(Duration(days: 1))))
         .toList();
-    var overdueSize = overdueTasks.length;
-    if (overdueSize == 0) {
+    futureDuties.sort((a, b) => a.nextDeadline.compareTo(b.nextDeadline));
+    if (listEquals(futureDuties, _dutiesWithScheduledNotification)) {
       return;
     }
+    _dutiesWithScheduledNotification = futureDuties;
+    flutterLocalNotificationsPlugin.cancelAll();
     var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
-        'OverduuDuties', 'Overdue duties', 'Notification about overdue tasks',
+        'OverdueDuties', 'Overdue duties', 'Notification about overdue tasks',
         importance: Importance.High, priority: Priority.High);
     var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
     var platformChannelSpecifics = new NotificationDetails(
         androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-    await flutterLocalNotificationsPlugin.show(
-      0,
-      'You have $overdueSize overdue tasks',
-      'Check if it is not your turn :)',
-      platformChannelSpecifics,
-      payload: overdueTasks.map((d) => d.name).join(', '),
-    );
+    var newMap = groupBy(futureDuties, (d) => _getNextMidnight(d.nextDeadline));
+    int index = 0;
+    for (List<Duty> list in newMap.values) {
+      await flutterLocalNotificationsPlugin.schedule(
+          index++,
+          'You have overdue task',
+          'Check if it is not your turn :)',
+          _getNextMidnight(list.first.nextDeadline),
+          platformChannelSpecifics,
+          payload: list.map((d) => d.name).join(', '),
+          androidAllowWhileIdle: true);
+    }
   }
 }
