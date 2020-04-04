@@ -10,13 +10,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:it_is_not_my_turn/add_duty_page.dart';
+import 'package:it_is_not_my_turn/complete_duty_screen.dart';
 import 'package:it_is_not_my_turn/const.dart';
 import 'package:it_is_not_my_turn/duty_history.dart';
 import 'package:it_is_not_my_turn/login_sign_up_page.dart';
 import 'package:it_is_not_my_turn/model/duty.dart';
-import 'package:it_is_not_my_turn/model/dutyHistory.dart';
-
-import 'model/user.dart';
+import 'package:it_is_not_my_turn/model/user.dart';
 
 void main() => runApp(LoginSignUpPage());
 
@@ -75,22 +74,13 @@ class MainScreenState extends State<MainScreen> {
                   fit: BoxFit.cover,
                 ),
               ),
-              child: Text(
-                'Menu',
-                style: TextStyle(
-                  color: primaryColor,
-                  fontSize: 24,
-                ),
-              ),
+              child: Text('Menu',
+                  style: TextStyle(color: primaryColor, fontSize: 24)),
             ),
             ListTile(
-              leading: Icon(Icons.exit_to_app, color: primaryColor),
-              title: Text(
-                'Logout',
-                style: TextStyle(color: primaryColor),
-              ),
-              onTap: signOut,
-            ),
+                leading: Icon(Icons.exit_to_app, color: primaryColor),
+                title: Text('Logout', style: TextStyle(color: primaryColor)),
+                onTap: signOut),
           ],
         ),
       ),
@@ -224,51 +214,12 @@ class MainScreenState extends State<MainScreen> {
     return datetime.difference(lastMidnight).inDays;
   }
 
-  onDoneClick(Duty duty) {
-    duty.lastUserName = currentUser.name;
-    int diffInDays = calculateDiffInDay(duty.nextDeadline);
-    duty.nextDeadline = calculateDeadline(duty);
-    Firestore.instance
-        .collection('duties')
-        .document(duty.name)
-        .setData(duty.toJson());
-    var historyRef =
-        Firestore.instance.collection('completionHistory').document(duty.name);
-    historyRef.collection('dutyHistory').add(
-        DutyHistory(currentUser.name, DateTime.now(), diffInDays).toJson());
-    historyRef
-        .collection('userStatistics')
-        .document(currentUser.name)
-        .setData({'count': 1});
-  }
-
-  DateTime calculateDeadline(Duty duty) {
-    DateTime nextDeadline =
-        calculateNextDate(duty.periodicity, duty.nextDeadline);
-    return duty.endDate == null || nextDeadline.isBefore(duty.endDate)
-        ? nextDeadline
-        : null;
-  }
-
-  // ignore: missing_return
-  DateTime calculateNextDate(
-      Periodicity periodicity, DateTime currentDeadline) {
-    const frequency = 1;
-    var now = DateTime.now();
-    switch (periodicity) {
-      case Periodicity.Daily:
-        return DateTime(now.year, now.month, now.day + frequency,
-            currentDeadline.hour, currentDeadline.minute);
-      case Periodicity.Weekly:
-        return DateTime(now.year, now.month, now.day + frequency * 7,
-            currentDeadline.hour, currentDeadline.minute);
-      case Periodicity.Monthly:
-        return DateTime(now.year, now.month + frequency, now.day,
-            currentDeadline.hour, currentDeadline.minute);
-      case Periodicity.Annually:
-        return DateTime(now.year + frequency, now.month, now.day,
-            currentDeadline.hour, currentDeadline.minute);
-    }
+  onDoneClick(Duty duty) async {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) =>
+                CompleteDutyScreen(duty: duty, currentUser: currentUser)));
   }
 
   onInfoClick(Duty duty) {
