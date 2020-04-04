@@ -3,7 +3,9 @@ import 'dart:ui';
 import 'package:add_2_calendar/add_2_calendar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:it_is_not_my_turn/add_duty_page.dart';
 import 'package:it_is_not_my_turn/const.dart';
@@ -28,9 +30,26 @@ class MainScreen extends StatefulWidget {
 class MainScreenState extends State<MainScreen> {
   final User currentUser;
 
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
   bool isLoading = false;
+  DateTime lastNotificationDate = DateTime.now();
 
   MainScreenState({Key key, @required this.currentUser});
+
+  @override
+  initState() {
+    super.initState();
+    var initializationSettingsAndroid =
+        new AndroidInitializationSettings("@mipmap/ic_launcher");
+    var initializationSettingsIOS = new IOSInitializationSettings();
+    var initializationSettings = new InitializationSettings(
+        initializationSettingsAndroid, initializationSettingsIOS);
+    flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
+    flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: onSelectNotification);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,39 +93,36 @@ class MainScreenState extends State<MainScreen> {
         ),
       ),
       body: Container(
-        color: bodyColor,
-        child: StreamBuilder(
-          stream: Firestore.instance.collection('duties').snapshots(),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(themeColor),
-                ),
-              );
-            } else {
-              return ListView.builder(
-                padding: EdgeInsets.all(10.0),
-                itemBuilder: (context, index) =>
-                    buildItem(context, snapshot.data.documents[index]),
-                itemCount: snapshot.data.documents.length,
-              );
-            }
-          },
-        ),
-      ),
+          color: bodyColor,
+          child: StreamBuilder(
+              stream: Firestore.instance.collection('duties').snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return Center(
+                      child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(themeColor),
+                  ));
+                } else {
+                  List<DocumentSnapshot> duties1 = snapshot.data.documents;
+                  var duties =
+                      duties1.map((d) => Duty.fromJson(d.data)).toList();
+                  _showNotificationAboutOverdueDuties(duties);
+                  return ListView.builder(
+                      padding: EdgeInsets.all(10.0),
+                      itemBuilder: (context, index) =>
+                          buildItem(context, duties[index]),
+                      itemCount: snapshot.data.documents.length);
+                }
+              })),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          onAddDutyPress();
-        },
+        onPressed: () => onAddDutyPress(),
         child: Icon(Icons.add),
         backgroundColor: buttonColor,
       ),
     );
   }
 
-  Widget buildItem(BuildContext context, DocumentSnapshot dutyDocument) {
-    Duty duty = Duty.fromJson(dutyDocument.data);
+  Widget buildItem(BuildContext context, Duty duty) {
     return ListTile(
         title: Row(
 //        todo align somehow
@@ -192,9 +208,13 @@ class MainScreenState extends State<MainScreen> {
     }
   }
 
-  int calculateDiffInDay(DateTime datetime) {
+  DateTime _getLastMidnight() {
     final now = DateTime.now();
-    final lastMidnight = new DateTime(now.year, now.month, now.day);
+    return new DateTime(now.year, now.month, now.day);
+  }
+
+  int calculateDiffInDay(DateTime datetime) {
+    final lastMidnight = _getLastMidnight();
     return datetime.difference(lastMidnight).inDays;
   }
 
@@ -258,5 +278,46 @@ class MainScreenState extends State<MainScreen> {
         startDate: duty.nextDeadline,
         endDate: duty.nextDeadline.add(Duration.zero));
     Add2Calendar.addEvent2Cal(event);
+  }
+
+  Future onSelectNotification(String payload) async {
+    showDialog(
+      context: context,
+      builder: (_) {
+        return new AlertDialog(
+          title: Text("Task with given name are overdue"),
+          content: Text(payload),
+        );
+      },
+    );
+  }
+
+  //todo add schedule
+  Future _showNotificationAboutOverdueDuties(List<Duty> duties) async {
+    if (_getLastMidnight().isBefore(lastNotificationDate)) {
+      return;
+    }
+    lastNotificationDate = DateTime.now();
+    var overdueTasks = duties
+        .where((d) =>
+            d.nextDeadline != null && d.nextDeadline.isBefore(DateTime.now()))
+        .toList();
+    var overdueSize = overdueTasks.length;
+    if (overdueSize == 0) {
+      return;
+    }
+    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+        'OverduuDuties', 'Overdue duties', 'Notification about overdue tasks',
+        importance: Importance.High, priority: Priority.High);
+    var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
+    var platformChannelSpecifics = new NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      'You have $overdueSize overdue tasks',
+      'Check if it is not your turn :)',
+      platformChannelSpecifics,
+      payload: overdueTasks.map((d) => d.name).join(', '),
+    );
   }
 }
