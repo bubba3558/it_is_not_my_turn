@@ -13,6 +13,7 @@ DutyHistory _$DutyHistoryFromJson(Map<String, dynamic> json) {
         ? null
         : DateTime.parse(json['completionDate'] as String),
     json['daysBeforeDeadline'] as int,
+    json['imageUrl'] as String,
   );
 }
 
@@ -20,5 +21,6 @@ Map<String, dynamic> _$DutyHistoryToJson(DutyHistory instance) =>
     <String, dynamic>{
       'userName': instance.userName,
       'completionDate': instance.completionDate?.toIso8601String(),
+      'imageUrl': instance.imageUrl,
       'daysBeforeDeadline': instance.daysBeforeDeadline,
     };
