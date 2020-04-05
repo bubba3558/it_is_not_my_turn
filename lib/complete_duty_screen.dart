@@ -1,9 +1,11 @@
 import 'dart:io';
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:camera/camera.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +32,7 @@ class CompleteDutyScreen extends StatefulWidget {
 
 class CompleteDutyState extends State<CompleteDutyScreen> {
   var imagePath;
+  FirebaseStorage _storage = FirebaseStorage.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +60,7 @@ class CompleteDutyState extends State<CompleteDutyScreen> {
                 ? Expanded(
                     child: InkWell(
                         child: Image.file(File(imagePath)),
-                        onTap: () => _onAddPhotoClick(context)),)
+                        onTap: () => _onAddPhotoClick(context)))
                 : Center(
                     child: RaisedButton.icon(
                     onPressed: () {
@@ -110,11 +113,11 @@ class CompleteDutyState extends State<CompleteDutyScreen> {
     Navigator.pop(context);
   }
 
-  completeTask(BuildContext context) {
+  completeTask(BuildContext context) async {
     widget.duty.lastUserName = widget.currentUser.name;
-    int diffInDays = calculateDiffInDay(widget.duty.nextDeadline);
+    var diffInDays = calculateDiffInDay(widget.duty.nextDeadline);
     widget.duty.nextDeadline = calculateDeadline(widget.duty);
-
+    String url = await uploadImage();
     Firestore.instance
         .collection('duties')
         .document(widget.duty.name)
@@ -123,14 +126,25 @@ class CompleteDutyState extends State<CompleteDutyScreen> {
         .collection('completionHistory')
         .document(widget.duty.name);
     historyRef.collection('dutyHistory').add(
-        DutyHistory(widget.currentUser.name, DateTime.now(), diffInDays)
+        DutyHistory(widget.currentUser.name, DateTime.now(), diffInDays, url)
             .toJson());
     historyRef
         .collection('userStatistics')
         .document(widget.currentUser.name)
-        .setData({'count': 1});
+        .setData({'count': 1}); //todo it should be incremented
     Navigator.pop(context);
     Fluttertoast.showToast(msg: 'Task marekd as complated');
+  }
+
+  Future<String> uploadImage() async {
+    if (imagePath == null) {
+      return null;
+    }
+    File image = File(imagePath);
+    StorageReference ref =
+        _storage.ref().child("images/${Random().nextInt(999999)}");
+    var uploadTask = ref.putFile(image);
+    return await (await uploadTask.onComplete).ref.getDownloadURL();
   }
 
   DateTime calculateDeadline(Duty duty) {

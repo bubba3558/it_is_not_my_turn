@@ -6,9 +6,10 @@ part 'dutyHistory.g.dart';
 class DutyHistory {
   final String userName;
   final DateTime completionDate;
-  int daysBeforeDeadline;
+  final String imageUrl;
+  final int daysBeforeDeadline;
 
-  DutyHistory(this.userName, this.completionDate, this.daysBeforeDeadline);
+  DutyHistory(this.userName, this.completionDate, this.daysBeforeDeadline, this.imageUrl);
 
   factory DutyHistory.fromJson(Map<String, dynamic> json) =>
       _$DutyHistoryFromJson(json);

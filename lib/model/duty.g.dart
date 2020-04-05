@@ -22,9 +22,9 @@ Map<String, dynamic> _$DutyToJson(Duty instance) => <String, dynamic>{
       'name': instance.name,
       'description': instance.description,
       'periodicity': _$PeriodicityEnumMap[instance.periodicity],
+      'endDate': instance.endDate?.toIso8601String(),
       'lastUserName': instance.lastUserName,
       'nextDeadline': instance.nextDeadline?.toIso8601String(),
-      'endDate': instance.endDate?.toIso8601String(),
     };
 
 T _$enumDecode<T>(
