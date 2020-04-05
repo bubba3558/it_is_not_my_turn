@@ -128,6 +128,9 @@ class DutyHistoryState extends State<DutyHistoryScreen> {
   Widget buildItem(DocumentSnapshot document) {
     DutyHistory history = DutyHistory.fromJson(document.data);
     return ListTile(
+      leading: history.imageUrl != null
+          ? Image.network( history.imageUrl, width: 40)
+          : Image(image: AssetImage('assets/icons/no-pictures.png'), width: 40),
       title: Row(children: <Widget>[Text(history.userName)]),
       subtitle: Text(formatter.format(history.completionDate)),
       trailing: history.daysBeforeDeadline >= 0
@@ -139,7 +142,7 @@ class DutyHistoryState extends State<DutyHistoryScreen> {
             )
           : Text(
               'Done ' +
-                  history.daysBeforeDeadline.toString() +
+                  history.daysBeforeDeadline.toString() + //todo *-1?
                   ' after deadline',
               style: TextStyle(color: Colors.redAccent),
             ),
