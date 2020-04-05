@@ -2,6 +2,10 @@
 
 Household duties organizer
 
+## Credits
+
+No pictures icon made by smashicons from www.flaticon.com
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.
