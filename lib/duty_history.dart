@@ -128,18 +128,18 @@ class DutyHistoryState extends State<DutyHistoryScreen> {
   Widget buildItem(DocumentSnapshot document) {
     DutyHistory history = DutyHistory.fromJson(document.data);
     return ListTile(
-      leading: InkWell(
-          child: history.imageUrl != null
-              ? Image.network(history.imageUrl, width: 40)
-              : Image(
-                  image: AssetImage('assets/icons/no-pictures.png'),
-                  width: 40,
-                ),
+      leading: history.imageUrl != null
+          ? InkWell(
+          child: Image.network(history.imageUrl, width: 40),
           onTap: () {
             Navigator.push(context, MaterialPageRoute(builder: (_) {
               return DetailScreen(history.imageUrl);
             }));
-          }),
+          })
+          : Image(
+        image: AssetImage('assets/icons/no-pictures.png'),
+        width: 40,
+      ),
       title: Row(children: <Widget>[Text(history.userName)]),
       subtitle: Text(formatter.format(history.completionDate)),
       trailing: history.daysBeforeDeadline >= 0
