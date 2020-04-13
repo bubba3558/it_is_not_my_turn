@@ -128,9 +128,18 @@ class DutyHistoryState extends State<DutyHistoryScreen> {
   Widget buildItem(DocumentSnapshot document) {
     DutyHistory history = DutyHistory.fromJson(document.data);
     return ListTile(
-      leading: history.imageUrl != null
-          ? Image.network( history.imageUrl, width: 40)
-          : Image(image: AssetImage('assets/icons/no-pictures.png'), width: 40),
+      leading: InkWell(
+          child: history.imageUrl != null
+              ? Image.network(history.imageUrl, width: 40)
+              : Image(
+                  image: AssetImage('assets/icons/no-pictures.png'),
+                  width: 40,
+                ),
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (_) {
+              return DetailScreen(history.imageUrl);
+            }));
+          }),
       title: Row(children: <Widget>[Text(history.userName)]),
       subtitle: Text(formatter.format(history.completionDate)),
       trailing: history.daysBeforeDeadline >= 0
@@ -172,5 +181,25 @@ class DutyHistoryState extends State<DutyHistoryScreen> {
     } else {
       return '';
     }
+  }
+}
+
+class DetailScreen extends StatelessWidget {
+  DetailScreen(this.imageUrl);
+
+  final String imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: GestureDetector(
+        child: Center(
+          child: Image.network(imageUrl),
+        ),
+        onTap: () {
+          Navigator.pop(context);
+        },
+      ),
+    );
   }
 }
