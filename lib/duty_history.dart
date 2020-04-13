@@ -3,10 +3,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:it_is_not_my_turn/model/const.dart';
+import 'package:it_is_not_my_turn/model/duty.dart';
 import 'package:it_is_not_my_turn/model/dutyHistory.dart';
-
-import 'const.dart';
-import 'model/duty.dart';
 
 class DutyHistoryScreen extends StatefulWidget {
   DutyHistoryScreen({Key key, @required this.duty}) : super(key: key);
@@ -27,7 +26,7 @@ class DataRequiredForBuild {
 class DutyHistoryState extends State<DutyHistoryScreen> {
   final winnerIcon = 'https://image.flaticon.com/icons/svg/1170/1170611.svg';
   final loserIcon = 'https://image.flaticon.com/icons/svg/43/43646.svg';
-  final formatter = new DateFormat('dd-MM-yyyy H:m');
+  final formatter = DateFormat('dd-MM-yyyy H:m');
   Duty duty;
 
   Future<DataRequiredForBuild> dataRequiredForBuild;
@@ -50,7 +49,7 @@ class DutyHistoryState extends State<DutyHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
+    return Scaffold(
         appBar: AppBar(
           title: Text(
             duty.name,
@@ -130,16 +129,16 @@ class DutyHistoryState extends State<DutyHistoryScreen> {
     return ListTile(
       leading: history.imageUrl != null
           ? InkWell(
-          child: Image.network(history.imageUrl, width: 40),
-          onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) {
-              return DetailScreen(history.imageUrl);
-            }));
-          })
+              child: Image.network(history.imageUrl, width: 40),
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) {
+                  return DetailScreen(history.imageUrl);
+                }));
+              })
           : Image(
-        image: AssetImage('assets/icons/no-pictures.png'),
-        width: 40,
-      ),
+              image: AssetImage('assets/icons/no-pictures.png'),
+              width: 40,
+            ),
       title: Row(children: <Widget>[Text(history.userName)]),
       subtitle: Text(formatter.format(history.completionDate)),
       trailing: history.daysBeforeDeadline >= 0

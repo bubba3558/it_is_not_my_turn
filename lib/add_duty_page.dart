@@ -4,9 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
-
-import 'const.dart';
-import 'model/duty.dart';
+import 'package:it_is_not_my_turn/model/const.dart';
+import 'package:it_is_not_my_turn/model/duty.dart';
 
 class AddDutyPage extends StatelessWidget {
   @override
@@ -15,9 +14,9 @@ class AddDutyPage extends StatelessWidget {
       appBar: AppBar(
         title: Text('New task'),
       ),
-      body: new SingleChildScrollView(
-          child: new Container(
-        margin: new EdgeInsets.all(15.0),
+      body: SingleChildScrollView(
+          child: Container(
+        margin: EdgeInsets.all(15.0),
         child: AddDutyForm(),
       )),
     );
@@ -48,7 +47,7 @@ class AddDutyFormState extends State<AddDutyForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: <Widget>[
-            new TextFormField(
+            TextFormField(
               decoration: const InputDecoration(labelText: 'Name'),
               keyboardType: TextInputType.text,
               validator: validateNotEmpty,
@@ -56,7 +55,7 @@ class AddDutyFormState extends State<AddDutyForm> {
                 _name = val;
               },
             ),
-            new TextFormField(
+            TextFormField(
               decoration: const InputDecoration(labelText: 'Description'),
               keyboardType: TextInputType.text,
               onChanged: (String val) {
@@ -66,7 +65,7 @@ class AddDutyFormState extends State<AddDutyForm> {
             buildStartDatePicker(),
             buildEndDatePicker(),
             buildPeriodicityChoice(),
-            new SizedBox(
+            SizedBox(
               height: 10.0,
             ),
             buildSaveButton(),
@@ -75,7 +74,7 @@ class AddDutyFormState extends State<AddDutyForm> {
   }
 
   Widget buildStartDatePicker() {
-    return new DateTimeField(
+    return DateTimeField(
       decoration: InputDecoration(labelText: 'Start date'),
       initialValue: _startDate,
       onChanged: (value) => setState(() => _startDate = value),
@@ -92,7 +91,7 @@ class AddDutyFormState extends State<AddDutyForm> {
   }
 
   Widget buildEndDatePicker() {
-    return new DateTimeField(
+    return DateTimeField(
       decoration: InputDecoration(labelText: 'End date (optional)'),
       initialValue: _endDate,
       onChanged: (value) => setState(() => _endDate = value),
@@ -101,8 +100,7 @@ class AddDutyFormState extends State<AddDutyForm> {
           context: context,
           firstDate: _startDate,
           initialDate: currentValue ??
-              new DateTime(
-                  _startDate.year + 1, _startDate.month, _startDate.day),
+              DateTime(_startDate.year + 1, _startDate.month, _startDate.day),
           lastDate: DateTime(2220),
         );
       },
@@ -111,9 +109,9 @@ class AddDutyFormState extends State<AddDutyForm> {
   }
 
   Widget buildPeriodicityChoice() {
-    return new Row(
+    return Row(
       children: <Widget>[
-        new DropdownButton<Periodicity>(
+        DropdownButton<Periodicity>(
             hint: Text('occurance'),
             value: _periodicity,
             onChanged: (Periodicity newValue) {
@@ -130,7 +128,7 @@ class AddDutyFormState extends State<AddDutyForm> {
   }
 
   Widget buildSaveButton() {
-    return new RaisedButton.icon(
+    return RaisedButton.icon(
       onPressed: save,
       label: Text('Submit', style: TextStyle(color: buttonLabelColor)),
       icon: Icon(Icons.save, color: buttonLabelColor),
