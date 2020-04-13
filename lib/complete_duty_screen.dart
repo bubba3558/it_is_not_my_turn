@@ -10,15 +10,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:it_is_not_my_turn/const.dart';
+import 'package:it_is_not_my_turn/model/const.dart';
 import 'package:it_is_not_my_turn/model/duty.dart';
+import 'package:it_is_not_my_turn/model/dutyHistory.dart';
 import 'package:it_is_not_my_turn/model/user.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'model/dutyHistory.dart';
-
-//todo move camera to onClick and add done dialog
 class CompleteDutyScreen extends StatefulWidget {
   CompleteDutyScreen({Key key, @required this.duty, @required this.currentUser})
       : super(key: key);

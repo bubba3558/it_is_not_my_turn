@@ -6,11 +6,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:it_is_not_my_turn/const.dart';
-import 'package:it_is_not_my_turn/main.dart';
+import 'package:it_is_not_my_turn/model/const.dart';
+import 'package:it_is_not_my_turn/model/user.dart';
+import 'package:it_is_not_my_turn/user_group_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'model/user.dart';
 
 class LoginSignUpPage extends StatelessWidget {
   @override
@@ -62,9 +61,9 @@ class LoginScreenState extends State<LoginScreen> {
       Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => MainScreen(
+              builder: (context) => UserGroupScreen(
                   currentUser:
-                      new User.fromJson(jsonDecode(prefs.getString('user'))))));
+                      User.fromJson(jsonDecode(prefs.getString('user'))))));
     }
     this.setState(() {
       isLoading = false;
@@ -132,14 +131,13 @@ class LoginScreenState extends State<LoginScreen> {
         (await firebaseAuth.signInWithCredential(credential)).user;
 
     if (firebaseUser != null) {
-      handleSuccess(new User.fromFirebase(firebaseUser));
+      handleSuccess(User.fromFirebase(firebaseUser));
     } else {
       handleFailure();
     }
   }
 
   void handleSuccess(User user) {
-    // Check is already sign up
     updateUserInfo(user);
     Fluttertoast.showToast(msg: "Sign in success");
     this.setState(() {
@@ -147,7 +145,7 @@ class LoginScreenState extends State<LoginScreen> {
     });
 
     Navigator.push(context,
-        MaterialPageRoute(builder: (context) => MainScreen(currentUser: user)));
+        MaterialPageRoute(builder: (_) => UserGroupScreen(currentUser: user)));
   }
 
   void handleFailure() {
@@ -164,7 +162,6 @@ class LoginScreenState extends State<LoginScreen> {
         .getDocuments();
     final List<DocumentSnapshot> documents = result.documents;
     if (documents.length == 0) {
-      // Update data to server if new user
       Firestore.instance
           .collection('users')
           .document(user.id)
