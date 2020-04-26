@@ -115,7 +115,6 @@ class UserGroupScreenState extends State<UserGroupScreen> {
   Widget buildItem(BuildContext context, Duty duty) {
     return ListTile(
         title: Row(
-//        todo align somehow
           children: <Widget>[
             Text(duty.name),
             SizedBox(

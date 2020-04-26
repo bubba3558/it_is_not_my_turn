@@ -6,9 +6,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:it_is_not_my_turn/dashboard.dart';
 import 'package:it_is_not_my_turn/model/const.dart';
 import 'package:it_is_not_my_turn/model/user.dart';
-import 'package:it_is_not_my_turn/user_group_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginSignUpPage extends StatelessWidget {
@@ -61,7 +61,7 @@ class LoginScreenState extends State<LoginScreen> {
       Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => UserGroupScreen(
+              builder: (_) => Dashboard(
                   currentUser:
                       User.fromJson(jsonDecode(prefs.getString('user'))))));
     }
@@ -145,7 +145,7 @@ class LoginScreenState extends State<LoginScreen> {
     });
 
     Navigator.push(context,
-        MaterialPageRoute(builder: (_) => UserGroupScreen(currentUser: user)));
+        MaterialPageRoute(builder: (_) => Dashboard(currentUser: user)));
   }
 
   void handleFailure() {
