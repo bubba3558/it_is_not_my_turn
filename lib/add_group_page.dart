@@ -124,8 +124,7 @@ class AddUserGroupFormState extends State<AddUserGroupForm> {
       String url = await uploadImage();
       Firestore.instance
           .collection('userGroups')
-          .document(_name)
-          .setData(UserGroup(_name, [widget.currentUser.name], url).toJson());
+          .add(UserGroup(_name, [widget.currentUser.name], url).toJson());
       Fluttertoast.showToast(msg: 'Group with name $_name was created');
       Navigator.pop(context);
     } else {

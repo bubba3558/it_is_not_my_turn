@@ -5,6 +5,7 @@ import 'package:it_is_not_my_turn/add_group_page.dart';
 import 'package:it_is_not_my_turn/model/const.dart';
 import 'package:it_is_not_my_turn/model/user.dart';
 import 'package:it_is_not_my_turn/model/userGroup.dart';
+import 'package:it_is_not_my_turn/user_group_screen.dart';
 
 class Dashboard extends StatefulWidget {
   final User currentUser;
@@ -71,10 +72,21 @@ class DashboardState extends State<Dashboard> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8)),
                 child: Center(
-                    child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[Image.network(group.photoUrl,width: 40), Text(group.name)],
-                ))))
+                    child: InkWell(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            group.photoUrl == null
+                                ? Image(
+                                    image: AssetImage(
+                                        'assets/icons/no-pictures.png'),
+                                    height: 60,
+                                  )
+                                : Image.network(group.photoUrl, height: 60),
+                            Text(group.name)
+                          ],
+                        ),
+                        onTap: () => _onGroupPress()))))
             .toList(),
       ),
     );
@@ -125,6 +137,14 @@ class DashboardState extends State<Dashboard> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => AddGroupPage(widget.currentUser)),
+    );
+  }
+
+  void _onGroupPress() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (_) => UserGroupScreen(currentUser: widget.currentUser)),
     );
   }
 }
