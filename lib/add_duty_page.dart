@@ -6,8 +6,13 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:it_is_not_my_turn/model/const.dart';
 import 'package:it_is_not_my_turn/model/duty.dart';
+import 'package:it_is_not_my_turn/model/userGroup.dart';
 
 class AddDutyPage extends StatelessWidget {
+  final UserGroup group;
+
+  AddDutyPage(this.group);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -17,13 +22,17 @@ class AddDutyPage extends StatelessWidget {
       body: SingleChildScrollView(
           child: Container(
         margin: EdgeInsets.all(15.0),
-        child: AddDutyForm(),
+        child: AddDutyForm(group),
       )),
     );
   }
 }
 
 class AddDutyForm extends StatefulWidget {
+  final UserGroup group;
+
+  AddDutyForm(this.group);
+
   @override
   AddDutyFormState createState() {
     return AddDutyFormState();
@@ -145,8 +154,13 @@ class AddDutyFormState extends State<AddDutyForm> {
   void save() {
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
-      Firestore.instance.collection('duties').document(_name).setData(
-          Duty(_name, _description, _periodicity, _startDate, _endDate)
+      Firestore.instance
+          .collection('userGroups')
+          .document(widget.group.id)
+          .collection('duties')
+          .document(_name)
+          .setData(Duty(_name, _description, _periodicity, _startDate, _endDate,
+                  widget.group.id)
               .toJson());
       Fluttertoast.showToast(msg: 'Task with name $_name was created');
       Navigator.pop(context);

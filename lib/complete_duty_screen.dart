@@ -117,6 +117,8 @@ class CompleteDutyState extends State<CompleteDutyScreen> {
     widget.duty.nextDeadline = calculateDeadline(widget.duty);
     String url = await uploadImage();
     Firestore.instance
+        .collection('userGroups')
+        .document(widget.duty.groupId)
         .collection('duties')
         .document(widget.duty.name)
         .setData(widget.duty.toJson());

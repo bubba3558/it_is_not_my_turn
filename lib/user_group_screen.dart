@@ -16,26 +16,25 @@ import 'package:it_is_not_my_turn/login_sign_up_page.dart';
 import 'package:it_is_not_my_turn/model/const.dart';
 import 'package:it_is_not_my_turn/model/duty.dart';
 import 'package:it_is_not_my_turn/model/user.dart';
+import 'package:it_is_not_my_turn/model/userGroup.dart';
 
 class UserGroupScreen extends StatefulWidget {
   final User currentUser;
+  final UserGroup group;
 
-  UserGroupScreen({Key key, @required this.currentUser}) : super(key: key);
+  UserGroupScreen({Key key, @required this.currentUser, @required this.group})
+      : super(key: key);
 
   @override
-  State createState() => UserGroupScreenState(currentUser: currentUser);
+  State createState() => UserGroupScreenState();
 }
 
 class UserGroupScreenState extends State<UserGroupScreen> {
-  final User currentUser;
-
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
   bool isLoading = false;
   List<Duty> _dutiesWithScheduledNotification;
-
-  UserGroupScreenState({Key key, @required this.currentUser});
 
   @override
   initState() {
@@ -85,7 +84,11 @@ class UserGroupScreenState extends State<UserGroupScreen> {
       body: Container(
           color: bodyColor,
           child: StreamBuilder(
-              stream: Firestore.instance.collection('duties').snapshots(),
+              stream: Firestore.instance
+                  .collection('userGroups')
+                  .document(widget.group.id)
+                  .collection('duties')
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return Center(
@@ -93,9 +96,16 @@ class UserGroupScreenState extends State<UserGroupScreen> {
                     valueColor: AlwaysStoppedAnimation<Color>(themeColor),
                   ));
                 } else {
-                  List<DocumentSnapshot> duties1 = snapshot.data.documents;
-                  var duties =
-                      duties1.map((d) => Duty.fromJson(d.data)).toList();
+                  List<DocumentSnapshot> documentSnapshots =
+                      snapshot.data.documents;
+
+                  List<Duty> duties = documentSnapshots
+                      .map((d) => Duty.fromJson(d.data))
+                      .toList();
+
+                  if (duties.length == 0) {
+                    return buildOnEmptyDutyList();
+                  }
                   _scheduleNotificationAboutOverdueDuties(duties);
                   return ListView.builder(
                       padding: EdgeInsets.all(10.0),
@@ -150,6 +160,15 @@ class UserGroupScreenState extends State<UserGroupScreen> {
         ));
   }
 
+  Widget buildOnEmptyDutyList() {
+    return Center(
+        child: Text(
+      "Your group has not create any task yet :(.\n\n"
+      "Create one and check if it is your turn",
+      textAlign: TextAlign.center,
+    ));
+  }
+
   Future<Null> signOut() async {
     GoogleSignIn googleSignIn = GoogleSignIn();
 
@@ -165,7 +184,7 @@ class UserGroupScreenState extends State<UserGroupScreen> {
   void onAddDutyPress() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => AddDutyPage()),
+      MaterialPageRoute(builder: (context) => AddDutyPage(widget.group)),
     );
   }
 
@@ -215,8 +234,8 @@ class UserGroupScreenState extends State<UserGroupScreen> {
     Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) =>
-                CompleteDutyScreen(duty: duty, currentUser: currentUser)));
+            builder: (context) => CompleteDutyScreen(
+                duty: duty, currentUser: widget.currentUser)));
   }
 
   onInfoClick(Duty duty) {

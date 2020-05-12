@@ -15,6 +15,7 @@ Duty _$DutyFromJson(Map<String, dynamic> json) {
         ? null
         : DateTime.parse(json['nextDeadline'] as String),
     json['endDate'] == null ? null : DateTime.parse(json['endDate'] as String),
+    json['groupId'] as String,
   )..lastUserName = json['lastUserName'] as String;
 }
 
@@ -23,6 +24,7 @@ Map<String, dynamic> _$DutyToJson(Duty instance) => <String, dynamic>{
       'description': instance.description,
       'periodicity': _$PeriodicityEnumMap[instance.periodicity],
       'endDate': instance.endDate?.toIso8601String(),
+      'groupId': instance.groupId,
       'lastUserName': instance.lastUserName,
       'nextDeadline': instance.nextDeadline?.toIso8601String(),
     };
