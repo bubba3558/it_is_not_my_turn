@@ -1,3 +1,4 @@
+import 'package:it_is_not_my_turn/model/userGroup.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'duty.g.dart';
@@ -8,28 +9,17 @@ class Duty {
   final String description;
   final Periodicity periodicity;
   final DateTime endDate;
+  final String groupId;
   String lastUserName;
   DateTime nextDeadline;
 
   Duty(this.name, this.description, this.periodicity, this.nextDeadline,
-      this.endDate);
+      this.endDate, this.groupId);
 
   factory Duty.fromJson(Map<String, dynamic> json) => _$DutyFromJson(json);
 
   Map<String, dynamic> toJson() => _$DutyToJson(this);
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Duty &&
-          runtimeType == other.runtimeType &&
-          name == other.name &&
-          lastUserName == other.lastUserName &&
-          nextDeadline == other.nextDeadline;
-
-  @override
-  int get hashCode =>
-      name.hashCode ^ lastUserName.hashCode ^ nextDeadline.hashCode;
 }
 
 enum Periodicity { Daily, Weekly, Monthly, Annually }

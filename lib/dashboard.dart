@@ -86,7 +86,7 @@ class DashboardState extends State<Dashboard> {
                             Text(group.name)
                           ],
                         ),
-                        onTap: () => _onGroupPress()))))
+                        onTap: () => _onGroupPress(group)))))
             .toList(),
       ),
     );
@@ -120,7 +120,7 @@ class DashboardState extends State<Dashboard> {
         .collection('userGroups')
         .where('userNames', arrayContains: widget.currentUser.name)
         .getDocuments();
-    return result.documents.map((d) => UserGroup.fromJson(d.data)).toList();
+    return result.documents.map((d) => UserGroup.fromFirebase(d)).toList();
   }
 
   Map<String, int> _getElementRatio(List list) {
@@ -140,11 +140,12 @@ class DashboardState extends State<Dashboard> {
     );
   }
 
-  void _onGroupPress() {
+  void _onGroupPress(UserGroup chosenGroup) {
     Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (_) => UserGroupScreen(currentUser: widget.currentUser)),
+          builder: (_) => UserGroupScreen(
+              currentUser: widget.currentUser, group: chosenGroup)),
     );
   }
 }
