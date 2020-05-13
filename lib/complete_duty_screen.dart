@@ -133,7 +133,7 @@ class CompleteDutyState extends State<CompleteDutyScreen> {
         .document(widget.currentUser.name)
         .setData({'count': 1}); //todo it should be incremented
     Navigator.pop(context);
-    Fluttertoast.showToast(msg: 'Task marekd as complated');
+    Fluttertoast.showToast(msg: 'Task marked as complated');
   }
 
   Future<String> uploadImage() async {
