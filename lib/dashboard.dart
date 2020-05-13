@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:it_is_not_my_turn/add_group_page.dart';
 import 'package:it_is_not_my_turn/model/const.dart';
 import 'package:it_is_not_my_turn/model/user.dart';
@@ -71,22 +72,35 @@ class DashboardState extends State<Dashboard> {
                 elevation: 3,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8)),
-                child: Center(
-                    child: InkWell(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
                           children: <Widget>[
-                            group.photoUrl == null
-                                ? Image(
-                                    image: AssetImage(
-                                        'assets/icons/no-pictures.png'),
-                                    height: 60,
-                                  )
-                                : Image.network(group.photoUrl, height: 60),
-                            Text(group.name)
-                          ],
-                        ),
-                        onTap: () => _onGroupPress(group)))))
+                            IconButton(
+                              icon: Icon(Icons.close),
+                              color: primaryColor,
+                              onPressed: () =>
+                                  _showLeaveConfirmationDialog(context, group),
+                            )
+                          ]),
+                      InkWell(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              group.photoUrl == null
+                                  ? Image(
+                                      image: AssetImage(
+                                          'assets/icons/no-pictures.png'),
+                                      height: 60,
+                                    )
+                                  : Image.network(group.photoUrl, height: 60),
+                              Text(group.name)
+                            ],
+                          ),
+                          onTap: () => _onGroupPress(group))
+                    ])))
             .toList(),
       ),
     );
@@ -147,5 +161,39 @@ class DashboardState extends State<Dashboard> {
           builder: (_) => UserGroupScreen(
               currentUser: widget.currentUser, group: chosenGroup)),
     );
+  }
+
+  Future<void> _showLeaveConfirmationDialog(
+      BuildContext context, UserGroup group) async {
+    await showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: Text('Are you sure you want to leave ' + group.name),
+          actions: <Widget>[
+            FlatButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text('No')),
+            FlatButton(
+                onPressed: () => _leaveGroup(context, group),
+                child: Text('Yes')),
+          ],
+        );
+      },
+    );
+  }
+
+  _leaveGroup(BuildContext context, UserGroup group) {
+    //todo replace with server function - security issues and races are possible
+    group.userNames.remove(widget.currentUser.name);
+    Firestore.instance
+        .collection('userGroups')
+        .document(group.id)
+        .updateData({'userNames': group.userNames});
+
+    Navigator.pop(context);
+    setState(() {});
+    Fluttertoast.showToast(msg: 'Left ' + group.name + ' group');
   }
 }

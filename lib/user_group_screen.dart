@@ -163,7 +163,7 @@ class UserGroupScreenState extends State<UserGroupScreen> {
   Widget buildOnEmptyDutyList() {
     return Center(
         child: Text(
-      "Your group has not create any task yet :(.\n\n"
+      "Your group has not created any task yet :(.\n\n"
       "Create one and check if it is your turn",
       textAlign: TextAlign.center,
     ));
