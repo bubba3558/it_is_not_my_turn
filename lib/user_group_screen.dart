@@ -66,8 +66,8 @@ class UserGroupScreenState extends State<UserGroupScreen> {
             DrawerHeader(
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: NetworkImage(
-                      'https://cdn.pixabay.com/photo/2015/05/31/14/23/organizer-791939_1280.jpg'),
+                  image: AssetImage('assets/icons/icon.jpg'),
+                  colorFilter: new ColorFilter.mode(Colors.black.withOpacity(0.6), BlendMode.dstATop),
                   fit: BoxFit.cover,
                 ),
               ),

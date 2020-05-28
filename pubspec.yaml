@@ -73,6 +73,7 @@ flutter:
   assets:
     - assets/icons/no-pictures.png
     - assets/icons/icon_sqr.jpg
+    - assets/icons/icon.jpg
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.io/assets-and-images/#resolution-aware.
 

@@ -48,6 +48,7 @@ class CompleteDutyState extends State<CompleteDutyScreen> {
           children: <Widget>[
             SizedBox(height: 10.0),
             Text(widget.duty.name, style: TextStyle(fontSize: 25)),
+            SizedBox(height: 10.0),
             AutoSizeText(
               widget.duty.description != null ? widget.duty.description : '',
               style: TextStyle(fontSize: 20),

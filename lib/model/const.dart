@@ -2,11 +2,11 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-final themeColor = Color(0xfffce6c7);
+final themeColor = Color(0xff6ba4ff);
 final primaryColor = Color(0xff203152);
 final secondaryColor = Colors.blueAccent;
 final bodyColor = Colors.white;
-final buttonColor = Colors.redAccent;
+final buttonColor = Color(0xff525c66);
 final buttonLabelColor = Colors.white;
 final iconButtonColor = Colors.grey;
 

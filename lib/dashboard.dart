@@ -53,7 +53,7 @@ class DashboardState extends State<Dashboard> {
         style: TextStyle(color: primaryColor),
       ),
       subtitle: Text('You belong to ' + groupList.length.toString() + ' group',
-          style: TextStyle(color: secondaryColor)),
+          style: TextStyle(color: themeColor)),
       trailing: Image(
         image: AssetImage('assets/icons/icon_sqr.jpg'),
         width: 40,

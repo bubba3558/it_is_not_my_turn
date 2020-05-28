@@ -130,7 +130,7 @@ class AddDutyFormState extends State<AddDutyForm> {
             },
             items: Periodicity.values.map((Periodicity value) {
               return DropdownMenuItem<Periodicity>(
-                  value: value, child: Text(value.toString()));
+                  value: value, child: Text(value.toString().split('.')[1]));
             }).toList()),
       ],
     );
