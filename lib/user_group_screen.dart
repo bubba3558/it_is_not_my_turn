@@ -75,6 +75,10 @@ class UserGroupScreenState extends State<UserGroupScreen> {
                   style: TextStyle(color: primaryColor, fontSize: 24)),
             ),
             ListTile(
+                leading: Icon(Icons.info_outline, color: primaryColor),
+                title: Text('Group id:\n' + widget.group.id,
+                    style: TextStyle(color: primaryColor))),
+            ListTile(
                 leading: Icon(Icons.exit_to_app, color: primaryColor),
                 title: Text('Logout', style: TextStyle(color: primaryColor)),
                 onTap: signOut),
