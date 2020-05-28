@@ -117,6 +117,7 @@ class CompleteDutyState extends State<CompleteDutyScreen> {
     var diffInDays = calculateDiffInDay(widget.duty.nextDeadline);
     widget.duty.nextDeadline = calculateDeadline(widget.duty);
     String url = await uploadImage();
+    //todo replace with server function
     Firestore.instance
         .collection('userGroups')
         .document(widget.duty.groupId)
@@ -132,7 +133,7 @@ class CompleteDutyState extends State<CompleteDutyScreen> {
     historyRef
         .collection('userStatistics')
         .document(widget.currentUser.name)
-        .setData({'count': 1}); //todo it should be incremented
+        .setData({'count': FieldValue.increment(1)}, merge: true);
     Navigator.pop(context);
     Fluttertoast.showToast(msg: 'Task marked as complated');
   }
