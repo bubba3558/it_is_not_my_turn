@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:it_is_not_my_turn/add_group_page.dart';
+import 'package:it_is_not_my_turn/join_group_page.dart';
 import 'package:it_is_not_my_turn/model/const.dart';
 import 'package:it_is_not_my_turn/model/user.dart';
 import 'package:it_is_not_my_turn/model/userGroup.dart';
@@ -121,7 +122,7 @@ class DashboardState extends State<Dashboard> {
                 borderRadius: new BorderRadius.circular(18.0)),
             label: Text('Join existing group'),
             icon: Icon(Icons.people, color: primaryColor),
-            onPressed: () {},
+            onPressed: () => _onJoinGroupPress(),
           ),
           Padding(
             padding: EdgeInsets.only(left: 16, right: 16, bottom: 16),
@@ -144,13 +145,20 @@ class DashboardState extends State<Dashboard> {
     if (list.length < 3) {
       return {'header': 1, 'grid': 4, 'footer': 5};
     }
-    return {'header': 1, 'grid': 7, 'footer': 2};
+    return {'header': 1, 'grid': 7, 'footer': 3};
   }
 
   void _onAddGroupPress() {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => AddGroupPage(widget.currentUser)),
+    );
+  }
+
+  void _onJoinGroupPress() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => JoinGroupPage(widget.currentUser)),
     );
   }
 
