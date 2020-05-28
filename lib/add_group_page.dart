@@ -81,9 +81,7 @@ class AddUserGroupFormState extends State<AddUserGroupForm> {
                                 icon: Icon(Icons.add_a_photo,
                                     color: Colors.black, size: 80.0),
                               )),
-                      SizedBox(
-                        height: 10.0,
-                      ),
+                      SizedBox(height: 10.0),
                       Row(
                         mainAxisSize: MainAxisSize.max,
                       ),

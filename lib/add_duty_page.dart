@@ -74,9 +74,7 @@ class AddDutyFormState extends State<AddDutyForm> {
             buildStartDatePicker(),
             buildEndDatePicker(),
             buildPeriodicityChoice(),
-            SizedBox(
-              height: 10.0,
-            ),
+            SizedBox(height: 10.0),
             buildSaveButton(),
           ],
         ));

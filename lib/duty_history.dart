@@ -61,7 +61,7 @@ class DutyHistoryState extends State<DutyHistoryScreen> {
           FutureBuilder<DataRequiredForBuild>(
             future: dataRequiredForBuild,
             builder: (context, snapshot) {
-              return snapshot.hasData
+              return snapshot.hasData && snapshot.data.mostActiveUser != ""
                   ? GridView.count(
                       shrinkWrap: true,
                       crossAxisCount: 2,
@@ -75,12 +75,9 @@ class DutyHistoryState extends State<DutyHistoryScreen> {
                           buildAwardCard('The most inactive user:',
                               snapshot.data.leastActiveUser, loserIcon),
                         ])
-                  : Center(
-                      child: CircularProgressIndicator(),
-                    );
+                  : SizedBox(height: 10.0);
             },
           ),
-          Text('History:', style: TextStyle(fontSize: 20)),
           Expanded(
               child: StreamBuilder(
                   stream: Firestore.instance
@@ -95,14 +92,25 @@ class DutyHistoryState extends State<DutyHistoryScreen> {
                             valueColor:
                                 AlwaysStoppedAnimation<Color>(themeColor)),
                       );
+                    } else if (snapshot.data.documents.length == 0) {
+                      return Center(
+                          child: Text(
+                              "Task has never been done.\n\n"
+                              "Be the first one!",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  color: primaryColor, fontSize: 18)));
                     } else {
-                      return ListView.builder(
-                        scrollDirection: Axis.vertical,
-                        shrinkWrap: true,
-                        itemBuilder: (context, index) =>
-                            buildItem(snapshot.data.documents[index]),
-                        itemCount: snapshot.data.documents.length,
-                      );
+                      return Column(children: <Widget>[
+                        Text('History:', style: TextStyle(fontSize: 20)),
+                        ListView.builder(
+                          scrollDirection: Axis.vertical,
+                          shrinkWrap: true,
+                          itemBuilder: (context, index) =>
+                              buildItem(snapshot.data.documents[index]),
+                          itemCount: snapshot.data.documents.length,
+                        )
+                      ]);
                     }
                   }))
         ]));
