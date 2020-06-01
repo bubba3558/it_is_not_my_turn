@@ -151,7 +151,7 @@ class CompleteDutyState extends State<CompleteDutyScreen> {
 
   DateTime calculateDeadline(Duty duty) {
     DateTime nextDeadline =
-        calculateNextDate(duty.periodicity, duty.nextDeadline);
+        calculateNextDate(duty.frequency, duty.periodicity, duty.nextDeadline);
     return duty.endDate == null || nextDeadline.isBefore(duty.endDate)
         ? nextDeadline
         : null;
@@ -159,8 +159,7 @@ class CompleteDutyState extends State<CompleteDutyScreen> {
 
   // ignore: missing_return
   DateTime calculateNextDate(
-      Periodicity periodicity, DateTime currentDeadline) {
-    const frequency = 1;
+      int frequency, Periodicity periodicity, DateTime currentDeadline) {
     var now = DateTime.now();
     switch (periodicity) {
       case Periodicity.Day:
