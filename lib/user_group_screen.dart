@@ -67,7 +67,8 @@ class UserGroupScreenState extends State<UserGroupScreen> {
               decoration: BoxDecoration(
                 image: DecorationImage(
                   image: AssetImage('assets/icons/icon.jpg'),
-                  colorFilter: new ColorFilter.mode(Colors.black.withOpacity(0.6), BlendMode.dstATop),
+                  colorFilter: new ColorFilter.mode(
+                      Colors.black.withOpacity(0.6), BlendMode.dstATop),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -138,8 +139,10 @@ class UserGroupScreenState extends State<UserGroupScreen> {
           ],
         ),
         subtitle: duty.lastUserName == null
-            ? Text('Was never done')
-            : Text('last done by ' + duty.lastUserName),
+            ? Text('Was never done',
+                style: TextStyle(color: primaryColor, fontSize: 12))
+            : Text('last done by ' + duty.lastUserName,
+                style: TextStyle(color: primaryColor, fontSize: 12)),
         onTap: () => onInfoClick(duty),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
@@ -200,23 +203,19 @@ class UserGroupScreenState extends State<UserGroupScreen> {
     int diffInDays = calculateDiffInDay(deadline);
     if (diffInDays < 0) {
       diffInDays *= -1;
-      return Text('Overdue by $diffInDays',
-          style: TextStyle(color: Colors.red));
+      return Text('- $diffInDays days', style: TextStyle(color: Colors.red));
     }
     if (diffInDays == 0) {
       return Text('Do it today', style: TextStyle(color: Colors.yellow));
     }
     if (diffInDays < 7) {
-      return Text('Left $diffInDays days',
-          style: TextStyle(color: Colors.green));
+      return Text('$diffInDays days', style: TextStyle(color: Colors.green));
     }
     int weeksLeft = (diffInDays / 7).floor();
     if (diffInDays < 5) {
-      return Text('Left $weeksLeft weeks',
-          style: TextStyle(color: Colors.blueGrey));
+      return Text('$weeksLeft weeks', style: TextStyle(color: Colors.blueGrey));
     } else {
-      return Text('Left more than 4 weeks',
-          style: TextStyle(color: Colors.grey));
+      return Text('> 4 weeks', style: TextStyle(color: Colors.grey));
     }
   }
 

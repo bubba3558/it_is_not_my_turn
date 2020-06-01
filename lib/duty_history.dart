@@ -26,7 +26,7 @@ class DataRequiredForBuild {
 class DutyHistoryState extends State<DutyHistoryScreen> {
   final winnerIcon = 'https://image.flaticon.com/icons/svg/1170/1170611.svg';
   final loserIcon = 'https://image.flaticon.com/icons/svg/43/43646.svg';
-  final formatter = DateFormat('dd-MM-yyyy H:m');
+  final formatter = DateFormat('dd-MM-yyyy HH:mm');
   Duty duty;
 
   Future<DataRequiredForBuild> dataRequiredForBuild;
@@ -78,6 +78,7 @@ class DutyHistoryState extends State<DutyHistoryScreen> {
                   : SizedBox(height: 10.0);
             },
           ),
+          Text('History:', style: TextStyle(fontSize: 20)),
           Expanded(
               child: StreamBuilder(
                   stream: Firestore.instance
@@ -101,16 +102,13 @@ class DutyHistoryState extends State<DutyHistoryScreen> {
                               style: TextStyle(
                                   color: primaryColor, fontSize: 18)));
                     } else {
-                      return Column(children: <Widget>[
-                        Text('History:', style: TextStyle(fontSize: 20)),
-                        ListView.builder(
-                          scrollDirection: Axis.vertical,
-                          shrinkWrap: true,
-                          itemBuilder: (context, index) =>
-                              buildItem(snapshot.data.documents[index]),
-                          itemCount: snapshot.data.documents.length,
-                        )
-                      ]);
+                      return ListView.builder(
+                        scrollDirection: Axis.vertical,
+                        shrinkWrap: true,
+                        itemBuilder: (context, index) =>
+                            buildItem(snapshot.data.documents[index]),
+                        itemCount: snapshot.data.documents.length,
+                      );
                     }
                   }))
         ]));
@@ -153,13 +151,13 @@ class DutyHistoryState extends State<DutyHistoryScreen> {
           ? Text(
               'Done ' +
                   history.daysBeforeDeadline.toString() +
-                  ' days before deadline',
+                  ' days\n  before deadline',
               style: TextStyle(color: Colors.greenAccent),
             )
           : Text(
               'Done ' +
                   history.daysBeforeDeadline.toString() + //todo *-1?
-                  ' after deadline',
+                  ' days\n after deadline',
               style: TextStyle(color: Colors.redAccent),
             ),
     );
