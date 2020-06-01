@@ -131,11 +131,7 @@ class AddDutyFormState extends State<AddDutyForm> {
               initialValue: _frequency.toString(),
               keyboardType: TextInputType.number,
               validator: validateNotEmpty,
-              onChanged: (String val) {
-                setState(() {
-                  _frequency = val as int;
-                });
-              },
+              onChanged: (value) => setState(() => _frequency = num.tryParse(value)),
             )),
         DropdownButton<Periodicity>(
             hint: Text('occurance'),
