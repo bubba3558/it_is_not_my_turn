@@ -43,10 +43,11 @@ class AddDutyFormState extends State<AddDutyForm> {
   final _formKey = GlobalKey<FormState>();
   bool _autoValidate = false;
   String _name;
+  int _frequency = 1;
   String _description;
   DateTime _startDate = DateTime.now();
   DateTime _endDate;
-  Periodicity _periodicity = Periodicity.Daily;
+  Periodicity _periodicity = Periodicity.Day;
 
   @override
   Widget build(BuildContext context) {
@@ -117,7 +118,25 @@ class AddDutyFormState extends State<AddDutyForm> {
 
   Widget buildPeriodicityChoice() {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: <Widget>[
+        Text("Every",
+            textAlign: TextAlign.center,
+            style: TextStyle(color: primaryColor, fontSize: 16)),
+        Container(
+            width: 100.0,
+            child: TextFormField(
+              textAlign: TextAlign.center,
+              initialValue: _frequency.toString(),
+              keyboardType: TextInputType.number,
+              validator: validateNotEmpty,
+              onChanged: (String val) {
+                setState(() {
+                  _frequency = val as int;
+                });
+              },
+            )),
         DropdownButton<Periodicity>(
             hint: Text('occurance'),
             value: _periodicity,
@@ -157,8 +176,8 @@ class AddDutyFormState extends State<AddDutyForm> {
           .document(widget.group.id)
           .collection('duties')
           .document(_name)
-          .setData(Duty(_name, _description, _periodicity, _startDate, _endDate,
-                  widget.group.id)
+          .setData(Duty(_name, _description, _periodicity, _frequency,
+                  _startDate, _endDate, widget.group.id)
               .toJson());
       Fluttertoast.showToast(msg: 'Task with name $_name was created');
       Navigator.pop(context);

@@ -11,6 +11,7 @@ Duty _$DutyFromJson(Map<String, dynamic> json) {
     json['name'] as String,
     json['description'] as String,
     _$enumDecodeNullable(_$PeriodicityEnumMap, json['periodicity']),
+    json['frequency'] as int,
     json['nextDeadline'] == null
         ? null
         : DateTime.parse(json['nextDeadline'] as String),
@@ -23,6 +24,7 @@ Map<String, dynamic> _$DutyToJson(Duty instance) => <String, dynamic>{
       'name': instance.name,
       'description': instance.description,
       'periodicity': _$PeriodicityEnumMap[instance.periodicity],
+      'frequency': instance.frequency,
       'endDate': instance.endDate?.toIso8601String(),
       'groupId': instance.groupId,
       'lastUserName': instance.lastUserName,
@@ -62,8 +64,8 @@ T _$enumDecodeNullable<T>(
 }
 
 const _$PeriodicityEnumMap = {
-  Periodicity.Daily: 'Daily',
-  Periodicity.Weekly: 'Weekly',
-  Periodicity.Monthly: 'Monthly',
-  Periodicity.Annually: 'Annually',
+  Periodicity.Day: 'Day',
+  Periodicity.Week: 'Week',
+  Periodicity.Month: 'Month',
+  Periodicity.Year: 'Year',
 };
