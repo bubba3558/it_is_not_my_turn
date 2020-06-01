@@ -163,16 +163,16 @@ class CompleteDutyState extends State<CompleteDutyScreen> {
     const frequency = 1;
     var now = DateTime.now();
     switch (periodicity) {
-      case Periodicity.Daily:
+      case Periodicity.Day:
         return DateTime(now.year, now.month, now.day + frequency,
             currentDeadline.hour, currentDeadline.minute);
-      case Periodicity.Weekly:
+      case Periodicity.Week:
         return DateTime(now.year, now.month, now.day + frequency * 7,
             currentDeadline.hour, currentDeadline.minute);
-      case Periodicity.Monthly:
+      case Periodicity.Month:
         return DateTime(now.year, now.month + frequency, now.day,
             currentDeadline.hour, currentDeadline.minute);
-      case Periodicity.Annually:
+      case Periodicity.Year:
         return DateTime(now.year + frequency, now.month, now.day,
             currentDeadline.hour, currentDeadline.minute);
     }
